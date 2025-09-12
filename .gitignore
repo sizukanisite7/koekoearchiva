@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment
+.env
+venv/
+*.egg-info/
+
+# Database
+voices.db
+
+# Downloads
+downloads/
+
+# Logs
+*.log

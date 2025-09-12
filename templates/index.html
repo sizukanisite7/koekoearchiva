@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Koe-Koeボイスライブラリ</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', 'Arial', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Meiryo', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 2em auto;
+            padding: 1em;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #5a4181;
+            border-bottom: 2px solid #5a4181;
+            padding-bottom: 0.5em;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1em;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #6a5acd;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #efefff;
+        }
+        audio {
+            width: 100%;
+            max-width: 300px;
+            height: 40px;
+        }
+        .title {
+            font-weight: bold;
+        }
+        .author {
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✨ Koe-Koeボイスライブラリ ✨</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>タイトル</th>
+                    <th>投稿者</th>
+                    <th>投稿日時</th>
+                    <th>再生時間 (秒)</th>
+                    <th>再生</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for voice in voices %}
+                <tr>
+                    <td class="title">{{ voice.title }}</td>
+                    <td class="author">{{ voice.author }}</td>
+                    <td>{{ voice.posted_at }}</td>
+                    <td>{{ voice.duration if voice.duration is not none else 'N/A' }}</td>
+                    <td>
+                        {% if voice.audio_url %}
+                        <audio controls preload="metadata">
+                            <source src="{{ voice.audio_url }}" type="audio/mpeg">
+                            お使いのブラウザは音声再生に対応していません。
+                        </audio>
+                        {% else %}
+                        <span>再生不可</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 2em;">まだボイスがありません。scraper.pyを実行して、ボイスをダウンロードしてください。</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
