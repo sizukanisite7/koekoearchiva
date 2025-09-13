@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import os
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 from urllib.parse import urljoin
 
@@ -24,6 +24,33 @@ logging.basicConfig(
 BASE_URL = "https://koe-koe.com/"
 LIST_URL_TEMPLATE = urljoin(BASE_URL, "list.php?g=1&g2=0&p={}")
 
+
+def parse_posted_at(posted_at_str):
+    """
+    相対的な投稿日時文字列（例: '@3時間前'）をdatetimeオブジェクトに変換する。
+    """
+    if not posted_at_str or not posted_at_str.startswith('@'):
+        # 不明なフォーマットの場合は現在時刻を返す
+        return datetime.now()
+
+    now = datetime.now()
+    posted_at_str = posted_at_str.strip('@').strip() # '@'と前後の空白を削除
+
+    if '時間前' in posted_at_str:
+        hours_ago = int(re.search(r'(\d+)時間前', posted_at_str).group(1))
+        return now - timedelta(hours=hours_ago)
+    elif '分前' in posted_at_str:
+        minutes_ago = int(re.search(r'(\d+)分前', posted_at_str).group(1))
+        return now - timedelta(minutes=minutes_ago)
+    elif '日前' in posted_at_str:
+        days_ago = int(re.search(r'(\d+)日前', posted_at_str).group(1))
+        return now - timedelta(days=days_ago)
+    elif '秒前' in posted_at_str:
+        seconds_ago = int(re.search(r'(\d+)秒前', posted_at_str).group(1))
+        return now - timedelta(seconds=seconds_ago)
+    else:
+        # 対応していないフォーマットの場合は現在時刻
+        return now
 
 def parse_duration(duration_str):
     """再生時間（例: '1分2秒'）を秒に変換する"""
@@ -97,6 +124,7 @@ def scrape_page(page_num, cursor):
 
             posted_at_element = detail_soup.select_one('.meta.detail .meta_item .metaIcon_up')
             posted_at_str = posted_at_element.text.strip() if posted_at_element else ""
+            posted_at_dt = parse_posted_at(posted_at_str)
 
             duration_element = detail_soup.select_one('.audioTime')
             duration_str = duration_element.text.strip() if duration_element else ""
@@ -116,7 +144,7 @@ def scrape_page(page_num, cursor):
             cursor.execute("""
                 INSERT INTO voices (title, author, posted_at, duration, filepath, koe_koe_id)
                 VALUES (?, ?, ?, ?, ?, ?)
-            """, (title, author, posted_at_str, duration_sec, filepath, koe_koe_id))
+            """, (title, author, posted_at_dt, duration_sec, filepath, koe_koe_id))
 
             logging.info(f"  - DBに保存: {title}")
             processed_count += 1

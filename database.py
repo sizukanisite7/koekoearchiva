@@ -29,7 +29,7 @@ CREATE TABLE voices (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     author TEXT NOT NULL,
-    posted_at TEXT NOT NULL,
+    posted_at TIMESTAMP NOT NULL,
     duration INTEGER,
     downloaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     filepath TEXT NOT NULL,
