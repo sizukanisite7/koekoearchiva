@@ -25,6 +25,28 @@
             border-bottom: 2px solid #5a4181;
             padding-bottom: 0.5em;
         }
+        .summary {
+            background-color: #eef;
+            padding: 1em;
+            border-radius: 8px;
+            margin-bottom: 1em;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .summary-item .label {
+            font-size: 0.9em;
+            color: #555;
+        }
+        .summary-item .value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #5a4181;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -57,11 +79,53 @@
         .author {
             color: #555;
         }
+        .pagination {
+            margin-top: 1em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .pagination a, .pagination span {
+            margin: 0 5px;
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #5a4181;
+        }
+        .pagination a:hover {
+            background-color: #efefff;
+        }
+        .pagination .current {
+            background-color: #6a5acd;
+            color: white;
+            border-color: #6a5acd;
+        }
+        .pagination .disabled {
+            color: #ccc;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>✨ Koe-Koeボイスライブラリ ✨</h1>
+
+        <div class="summary">
+            <div class="summary-item">
+                <span class="label">総ファイル数</span>
+                <span class="value">{{ summary.total_voices }}</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">総再生時間</span>
+                <span class="value">{{ '%d時間 %d分'|format(summary.total_duration // 3600, (summary.total_duration % 3600) // 60) }}</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">総ファイルサイズ</span>
+                <span class="value">{{ summary.total_filesize }}</span>
+            </div>
+        </div>
+
         <table>
             <thead>
                 <tr>
@@ -101,6 +165,24 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        {% if total_pages > 1 %}
+        <div class="pagination">
+            <a href="{{ url_for('index', page=1) }}" class="{{ 'disabled' if page == 1 else '' }}">&laquo; 最初</a>
+            <a href="{{ url_for('index', page=page-1) }}" class="{{ 'disabled' if page == 1 else '' }}">前へ</a>
+
+            {% for p in range(1, total_pages + 1) %}
+                {% if p >= page - 2 and p <= page + 2 %}
+                    <a href="{{ url_for('index', page=p) }}" class="{{ 'current' if p == page else '' }}">{{ p }}</a>
+                {% elif p == page - 3 or p == page + 3 %}
+                    <span>...</span>
+                {% endif %}
+            {% endfor %}
+
+            <a href="{{ url_for('index', page=page+1) }}" class="{{ 'disabled' if page == total_pages else '' }}">次へ</a>
+            <a href="{{ url_for('index', page=total_pages) }}" class="{{ 'disabled' if page == total_pages else '' }}">最後 &raquo;</a>
+        </div>
+        {% endif %}
     </div>
 </body>
 </html>
