@@ -41,6 +41,7 @@ def index():
             voice['audio_url'] = url_for('download_file', filename=os.path.basename(voice['filepath']))
         else:
             voice['audio_url'] = None
+
         voices.append(voice)
 
     return render_template('index.html', voices=voices)

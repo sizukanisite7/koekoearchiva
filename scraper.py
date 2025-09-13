@@ -5,6 +5,7 @@ import sqlite3
 from datetime import datetime
 import re
 from urllib.parse import urljoin
+
 import time
 import logging
 from config import DATABASE, DOWNLOADS_DIR
@@ -23,10 +24,12 @@ logging.basicConfig(
 BASE_URL = "https://koe-koe.com/"
 LIST_URL_TEMPLATE = urljoin(BASE_URL, "list.php?g=1&g2=0&p={}")
 
+
 def parse_duration(duration_str):
     """再生時間（例: '1分2秒'）を秒に変換する"""
     if not duration_str:
         return None
+
     minutes, seconds = 0, 0
     min_match = re.search(r'(\d+)分', duration_str)
     if min_match:
@@ -72,6 +75,7 @@ def scrape_page(page_num, cursor):
         detail_url = urljoin(BASE_URL, link.get('href'))
         try:
             koe_koe_id_match = re.search(r'n=(\d+)', detail_url)
+
             if not koe_koe_id_match:
                 continue
             koe_koe_id = koe_koe_id_match.group(1)
@@ -99,6 +103,7 @@ def scrape_page(page_num, cursor):
             duration_sec = parse_duration(duration_str)
 
             audio_url = f"https://file.koe-koe.com/sound/upload/{koe_koe_id}.mp3"
+
             audio_res = requests.get(audio_url)
             audio_res.raise_for_status()
 
@@ -112,6 +117,7 @@ def scrape_page(page_num, cursor):
                 INSERT INTO voices (title, author, posted_at, duration, filepath, koe_koe_id)
                 VALUES (?, ?, ?, ?, ?, ?)
             """, (title, author, posted_at_str, duration_sec, filepath, koe_koe_id))
+
             logging.info(f"  - DBに保存: {title}")
             processed_count += 1
 
