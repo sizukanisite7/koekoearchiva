@@ -80,13 +80,17 @@
                     <td>{{ voice.posted_at }}</td>
                     <td>{{ voice.duration if voice.duration is not none else 'N/A' }}</td>
                     <td>
-                        {% if voice.audio_url %}
+
+                        {% if voice.file_exists %}
+
                         <audio controls preload="metadata">
                             <source src="{{ voice.audio_url }}" type="audio/mpeg">
                             お使いのブラウザは音声再生に対応していません。
                         </audio>
                         {% else %}
-                        <span>再生不可</span>
+
+                        <span style="color: red;">ファイルが見つかりません。<br><code>scraper.py</code>を実行してください。</span>
+
                         {% endif %}
                     </td>
                 </tr>

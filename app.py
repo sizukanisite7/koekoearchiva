@@ -35,8 +35,13 @@ def index():
     voices = []
     for row in voices_raw:
         voice = dict(row)
-        # Create a URL for the audio file
-        voice['audio_url'] = url_for('download_file', filename=os.path.basename(voice['filepath']))
+        voice['file_exists'] = os.path.exists(voice['filepath'])
+        # Create a URL for the audio file only if it exists
+        if voice['file_exists']:
+            voice['audio_url'] = url_for('download_file', filename=os.path.basename(voice['filepath']))
+        else:
+            voice['audio_url'] = None
+
         voices.append(voice)
 
     return render_template('index.html', voices=voices)
