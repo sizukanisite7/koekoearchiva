@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from flask import Flask, render_template, send_from_directory, url_for
 from database import get_db_connection
 from config import DOWNLOADS_DIR, DATABASE
@@ -41,6 +42,15 @@ def index():
             voice['audio_url'] = url_for('download_file', filename=os.path.basename(voice['filepath']))
         else:
             voice['audio_url'] = None
+
+        # posted_atをフォーマット
+        posted_at_str = voice['posted_at']
+        # マイクロ秒を削除してパース
+        if '.' in posted_at_str:
+            dt_object = datetime.strptime(posted_at_str.split('.')[0], '%Y-%m-%d %H:%M:%S')
+        else:
+            dt_object = datetime.strptime(posted_at_str, '%Y-%m-%d %H:%M:%S')
+        voice['posted_at'] = dt_object.strftime('%Y-%m-%d %H:%M')
 
         voices.append(voice)
 
