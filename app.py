@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from flask import Flask, render_template, send_from_directory, url_for
+from flask import Flask, render_template, send_from_directory, url_for, request
 from database import get_db_connection
 from config import DOWNLOADS_DIR, DATABASE
 
@@ -26,26 +26,32 @@ def download_file(filename):
 
 @app.route('/')
 def index():
-    """Show the main page with a list of all voices."""
+    """Show the main page with a list of all voices, with optional search."""
+    query = request.args.get('q', '')
     conn = get_db()
-    # `filepath` is the full path, we need just the filename for the URL
-    # We can get it using SUBSTR and INSTR, or just os.path.basename in Python
-    voices_raw = conn.execute('SELECT id, title, author, posted_at, duration, filepath, downloaded_at FROM voices ORDER BY downloaded_at DESC').fetchall()
+
+    base_query = 'SELECT id, title, author, posted_at, duration, filepath, downloaded_at FROM voices'
+    params = []
+
+    if query:
+        base_query += ' WHERE title LIKE ? OR author LIKE ?'
+        params.extend([f'%{query}%', f'%{query}%'])
+
+    base_query += ' ORDER BY downloaded_at DESC'
+
+    voices_raw = conn.execute(base_query, params).fetchall()
     conn.close()
 
     voices = []
     for row in voices_raw:
         voice = dict(row)
         voice['file_exists'] = os.path.exists(voice['filepath'])
-        # Create a URL for the audio file only if it exists
         if voice['file_exists']:
             voice['audio_url'] = url_for('download_file', filename=os.path.basename(voice['filepath']))
         else:
             voice['audio_url'] = None
 
-        # posted_atをフォーマット
         posted_at_str = voice['posted_at']
-        # マイクロ秒を削除してパース
         if '.' in posted_at_str:
             dt_object = datetime.strptime(posted_at_str.split('.')[0], '%Y-%m-%d %H:%M:%S')
         else:
@@ -54,7 +60,7 @@ def index():
 
         voices.append(voice)
 
-    return render_template('index.html', voices=voices)
+    return render_template('index.html', voices=voices, query=query)
 
 if __name__ == '__main__':
     # Ensure the downloads directory exists
